@@ -36,6 +36,7 @@ struct AIEntity {
 	AIVector position;
 	AIVector velocity;
 	bool teleported;
+	unsigned int ticks; 
 };
 
 // server's entity data that it uses to update entities

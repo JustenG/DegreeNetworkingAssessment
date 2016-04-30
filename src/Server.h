@@ -17,6 +17,9 @@ public:
 	void	run();
 			
 private:
+
+	//Number Of messages sent
+	unsigned int m_numMessagesSent;
 	
 	// occasionally loses or delays packets
 	void	broadcastFaultyData(const char* data, unsigned int size);

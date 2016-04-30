@@ -30,7 +30,8 @@ AssessmentNetworkingApplication::~AssessmentNetworkingApplication() {
 
 bool AssessmentNetworkingApplication::startup() 
 {
-	packetTime = 0;
+	m_packetTime = 0;
+	m_largestTick = 0;
 
 	// setup the basic window
 	createWindow("Client Application", 1280, 720);
@@ -91,7 +92,7 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 			ai.position.x += ai.velocity.x * 0.016666667f;
 			ai.position.y += ai.velocity.y * 0.016666667f;
 		}
-		packetTime += deltaTime;
+		m_packetTime += deltaTime;
 	}
 
 	for (nullptr; packet; m_peerInterface->DeallocatePacket(packet), packet = m_peerInterface->Receive()) 
@@ -132,10 +133,10 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 			else
 			{
 				stream.Read((char*)m_aiEntities.data(), size);
-				EntitySanityCheck(packetTime);
+				EntitySanityCheck(m_packetTime);
 			}
 
-			packetTime = deltaTime;
+			m_packetTime = deltaTime;
 
 			break;
 		}
@@ -229,24 +230,30 @@ void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 	//
 	//}
 
-	m_aiPastEntitys.push_back(m_aiEntities[0]);
-	if (m_aiPastEntitys.size() > 5)
-		m_aiPastEntitys.erase(std::begin(m_aiPastEntitys));
-
-
-
-	for (size_t i = 0; i < m_aiEntities.size(); i++)
+	if (m_aiEntities[0].ticks >= m_largestTick)
 	{
-		AIEntity ai;
-		ai = m_aiEntities[i];
+		for (size_t i = 0; i < m_aiEntities.size(); i++)
+		{
+			AIEntity ai;
+			ai = m_aiEntities[i];
 
-		ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
-		ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
+			ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
+			ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
 
-		m_aiTrueData[i] = ai;
+			m_aiTrueData[i] = ai;
+		}
+
+		m_aiLastFiltedFrame = m_aiTrueData;
 
 	}
-	m_aiLastFiltedFrame = m_aiTrueData;
+	else
+	{
+
+	}
+
+
+
+
 }
 
 AIVector AssessmentNetworkingApplication::LowPass(AIVector prevFiltered, AIVector currRaw, float smoothingFactor)

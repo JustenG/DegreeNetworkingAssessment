@@ -40,10 +40,12 @@ private:
 	std::vector<AIEntity>		m_aiTrueData;
 	std::vector<AIEntity>		m_aiPastEntitys;
 
+	int m_largestTick;
+	float m_packetTime;
+
 	float prevTime;
 	float deltaTime;
 
-	float packetTime;
 
 
 };

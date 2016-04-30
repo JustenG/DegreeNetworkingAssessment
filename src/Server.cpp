@@ -13,6 +13,9 @@ Server::Server(unsigned int entityCount, float arenaRadius, float packetlossPerc
 	m_peerInterface = RakNet::RakPeerInterface::GetInstance();
 
 	setupAIEntities(entityCount);
+	
+	//Set number of sent messages to 0
+	m_numMessagesSent = 0;
 }
 
 Server::~Server() {
@@ -152,10 +155,14 @@ void Server::setupAIEntities(unsigned int count) {
 
 		ai.velocity.x = sinf(facing) * MAX_VELOCITY;
 		ai.velocity.y = cosf(facing) * MAX_VELOCITY;
+		
+		ai.ticks = 0;
 	}
 }
 
 void Server::updateAIEntities(float deltaTime) {
+
+	m_numMessagesSent++;
 
 	for (auto& ai : m_aiServerEntities) {
 
@@ -190,6 +197,8 @@ void Server::updateAIEntities(float deltaTime) {
 			ai.data->position.x -= offset.x * m_arenaRadius * 2;
 			ai.data->position.y -= offset.y * m_arenaRadius * 2;
 		}
+		
+		ai.data->ticks = m_numMessagesSent;
 	}
 
 	// broadcast entities
