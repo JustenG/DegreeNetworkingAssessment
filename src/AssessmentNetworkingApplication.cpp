@@ -49,7 +49,7 @@ bool AssessmentNetworkingApplication::startup()
 	m_peerInterface->Startup(1, &sd, 1);
 
 	// request access to server
-	std::string ipAddress = "10.17.23.188";
+	std::string ipAddress = "localhost";
 	//std::cout << "Connecting to server at: ";
 	//std::cin >> ipAddress;
 	RakNet::ConnectionAttemptResult res = m_peerInterface->Connect(ipAddress.c_str(), SERVER_PORT, nullptr, 0);
@@ -129,6 +129,7 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 				m_aiLastFiltedFrame.resize(size / sizeof(AIEntity));
 				stream.Read((char*)m_aiEntities.data(), size);
 				m_aiLastFiltedFrame = m_aiEntities;
+				m_aiPastEntitys = m_aiEntities;
 			}
 			else
 			{
@@ -232,26 +233,42 @@ void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 
 	if (m_aiEntities[0].ticks >= m_largestTick)
 	{
+
+		m_largestTick = m_aiEntities[0].ticks;
+
+
 		for (size_t i = 0; i < m_aiEntities.size(); i++)
 		{
 			AIEntity ai;
 			ai = m_aiEntities[i];
 
-			ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
-			ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
+			AIVector differance;
+			differance.x = ai.position.x - m_aiPastEntitys[i].position.x;
+			differance.y = ai.position.y - m_aiPastEntitys[i].position.y;
+
+			if (ai.teleported || differance.length() > 40)
+			{
+				ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
+				ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
+			}
+			else
+			{
+				ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
+				ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
+			}
 
 			m_aiTrueData[i] = ai;
 		}
 
 		m_aiLastFiltedFrame = m_aiTrueData;
 
+		printf("%i \n", m_largestTick);
+		m_aiPastEntitys = m_aiEntities;
 	}
 	else
 	{
-
+		printf("WARNING: SKIPPED OLD DATA %i \n", m_largestTick);
 	}
-
-
 
 
 }

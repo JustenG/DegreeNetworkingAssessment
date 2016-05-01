@@ -61,8 +61,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)dep/Raknet/include;$(SolutionDir)dep/glm;$(SolutionDir)dep/glfw-3.1.2/include;$(SolutionDir)dep/stb-master;$(SolutionDir)dep/imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(SolutionDir)dep/Raknet/lib;$(SolutionDir)dep/glfw-3.1.2/src/$(Configuration);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <IncludePath>$(SolutionDir)dep/Raknet/include;$(SolutionDir)dep/glm;$(SolutionDir)dep/glfw-3.1.2/include;$(SolutionDir)dep/stb-master;$(SolutionDir)dep/imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)dep/Raknet/lib;$(SolutionDir)dep/glfw-3.1.2/src/libs;$(SolutionDir)dep/glfw-3.1.2/src/$(Configuration);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IntDir>$(SolutionDir)obj\$(ProjectName)\(Configuration)\</IntDir>
