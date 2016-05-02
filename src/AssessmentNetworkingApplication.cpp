@@ -85,19 +85,10 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 	// handle network messages
 	RakNet::Packet* packet;
 
-	if ((packet = m_peerInterface->Receive()) == nullptr)
+	for (packet = m_peerInterface->Receive(); packet; m_peerInterface->DeallocatePacket(packet), packet = m_peerInterface->Receive()) 
 	{
-		for (auto& ai : m_aiEntities)
+		switch (packet->data[0]) 
 		{
-			ai.position.x += ai.velocity.x * 0.016666667f;
-			ai.position.y += ai.velocity.y * 0.016666667f;
-		}
-		m_packetTime += deltaTime;
-	}
-
-	for (nullptr; packet; m_peerInterface->DeallocatePacket(packet), packet = m_peerInterface->Receive()) 
-	{
-		switch (packet->data[0]) {
 		case ID_CONNECTION_REQUEST_ACCEPTED:
 			std::cout << "Our connection request has been accepted." << std::endl;
 			break;
@@ -163,78 +154,13 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 
 void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 {
-	//AIEntity cAI = m_aiEntities[0];
-	//AIEntity pAI = m_aiLastFrame[0];
-	//AIVector expPos;
-
-	////If teleported, flip pos
-	//if (pAI.teleported)
-	//{
-	//	expPos.x = -pAI.position.x;
-	//	expPos.y = -pAI.position.y;
-	//}
-	//else
-	//{
-	//	expPos.x = pAI.position.x;
-	//	expPos.y = pAI.position.y;
-	//}
-	////Add expected movement
-	//expPos.x += pAI.velocity.x * deltaTime;
-	//expPos.y += pAI.velocity.y * deltaTime;
-
-	////Check how different data is
-	//vec2 differance;
-	//differance.x = expPos.x - cAI.position.x;
-	//differance.y = expPos.y - cAI.position.y;
-	//float displacement = glm::length(differance);
-	//printf("%f \n", displacement);
-
-	////Check if differance is valid
-	//float tolerance = 15;
-	//bool goodPacket = displacement < tolerance;
-
-	//for (size_t i = 0; i < m_aiEntities.size(); i++)
-	//{
-	//
-	//	AIEntity ai;	
-	//
-	//	//If actually teleported
-	//	if (goodPacket)
-	//	{
-	//		//Good Packet
-	//		ai = m_aiEntities[i];
-	//		if (m_aiEntities[i].teleported)
-	//		{
-	//			//ai.position = LowPass(m_aiLastFrame[i].position, m_aiEntities[i].position, deltaTime);
-
-	//			ai.position.x = -ai.position.x;
-	//			ai.position.y = -ai.position.y;
-
-	//			ai.velocity = LowPass(m_aiLastFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
-	//		}
-	//		else
-	//		{
-	//			ai.position = LowPass(m_aiLastFrame[i].position, m_aiEntities[i].position, deltaTime);
-	//			ai.velocity = LowPass(m_aiLastFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
-	//		}
-	//	}
-	//	else
-	//	{
-	//		//Delayed Packet
-	//		ai = m_aiLastFrame[i];
-	//		ai.position.x += ai.velocity.x * 0.016666667f;
-	//		ai.position.y += ai.velocity.y * 0.016666667f;
-	//	}
-	//
-	//
-	//	m_aiTrueData[i] = ai;
-	//
-	//}
-
-	if (m_aiEntities[0].ticks >= m_largestTick)
+	//WORKS - JUST SLOW
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
+	if (m_aiEntities[0].ticks == m_largestTick + 1)
 	{
 
-		m_largestTick = m_aiEntities[0].ticks;
+		m_largestTick++;
 
 
 		for (size_t i = 0; i < m_aiEntities.size(); i++)
@@ -242,19 +168,27 @@ void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 			AIEntity ai;
 			ai = m_aiEntities[i];
 
-			AIVector differance;
-			differance.x = ai.position.x - m_aiPastEntitys[i].position.x;
-			differance.y = ai.position.y - m_aiPastEntitys[i].position.y;
-
-			if (ai.teleported || differance.length() > 40)
+			if (ai.teleported)
 			{
 				ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
 				ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
 			}
 			else
 			{
-				ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
-				ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
+				AIVector differance;
+				differance.x = ai.position.x - m_aiPastEntitys[i].position.x;
+				differance.y = ai.position.y - m_aiPastEntitys[i].position.y;
+
+				if (glm::abs(differance.x) > 40 || glm::abs(differance.y) > 40)
+				{
+					ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
+					ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
+				}
+				else
+				{
+					ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
+					ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
+				}
 			}
 
 			m_aiTrueData[i] = ai;
@@ -267,8 +201,31 @@ void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 	}
 	else
 	{
+		m_largestTick++;
 		printf("WARNING: SKIPPED OLD DATA %i \n", m_largestTick);
 	}
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
+
+	//if (m_aiEntities[0].ticks >= m_largestTick)
+	//{
+	//	m_largestTick = m_aiEntities[0].ticks;
+	//	m_aiTrueData = m_aiEntities;
+	//	m_aiLastFiltedFrame = m_aiEntities;
+	//}
+	//else
+	//{
+	//	for (size_t i = 0; i < m_aiLastFiltedFrame.size(); i++)
+	//	{
+	//		AIEntity ai = m_aiLastFiltedFrame[i];
+	//		ai.position.x += ai.velocity.x * 0.016666667f;
+	//		ai.position.y += ai.velocity.y * 0.016666667f;
+	//		m_aiLastFiltedFrame[i] = ai;
+	//	}
+	//	m_aiTrueData = m_aiLastFiltedFrame;
+	//}
+
+
 
 
 }

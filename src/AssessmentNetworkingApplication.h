@@ -39,6 +39,9 @@ private:
 	std::vector<AIEntity>		m_aiLastFiltedFrame;
 	std::vector<AIEntity>		m_aiTrueData;
 	std::vector<AIEntity>		m_aiPastEntitys;
+	std::vector<AIEntity>		m_aiSkippedEntitys;
+
+	bool m_lastFrameSkipped;
 
 	int m_largestTick;
 	float m_packetTime;
