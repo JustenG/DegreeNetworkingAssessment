@@ -121,6 +121,7 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 				stream.Read((char*)m_aiEntities.data(), size);
 				m_aiLastFiltedFrame = m_aiEntities;
 				m_aiPastEntitys = m_aiEntities;
+				m_largestTick = m_aiEntities[0].ticks;
 			}
 			else
 			{
@@ -157,56 +158,68 @@ void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 	//WORKS - JUST SLOW
 	//-------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------
-	if (m_aiEntities[0].ticks == m_largestTick + 1)
-	{
+	//if (m_aiEntities[0].ticks >= m_largestTick)
+	//{
 
-		m_largestTick++;
+	//	m_largestTick = m_aiEntities[0].ticks;
 
 
-		for (size_t i = 0; i < m_aiEntities.size(); i++)
-		{
-			AIEntity ai;
-			ai = m_aiEntities[i];
+	//	for (size_t i = 0; i < m_aiEntities.size(); i++)
+	//	{
+	//		AIEntity ai;
+	//		ai = m_aiEntities[i];
 
-			if (ai.teleported)
-			{
-				ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
-				ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
-			}
-			else
-			{
-				AIVector differance;
-				differance.x = ai.position.x - m_aiPastEntitys[i].position.x;
-				differance.y = ai.position.y - m_aiPastEntitys[i].position.y;
+	//		if (ai.teleported)
+	//		{
+	//			ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
+	//			ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
+	//		}
+	//		else
+	//		{
+	//			AIVector differance;
+	//			differance.x = ai.position.x - m_aiPastEntitys[i].position.x;
+	//			differance.y = ai.position.y - m_aiPastEntitys[i].position.y;
 
-				if (glm::abs(differance.x) > 40 || glm::abs(differance.y) > 40)
-				{
-					ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
-					ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
-				}
-				else
-				{
-					ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
-					ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
-				}
-			}
+	//			if (glm::abs(differance.x) > 40 || glm::abs(differance.y) > 40)
+	//			{
+	//				ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
+	//				ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
+	//			}
+	//			else
+	//			{
+	//				ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
+	//				ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
+	//			}
+	//		}
 
-			m_aiTrueData[i] = ai;
-		}
+	//		m_aiTrueData[i] = ai;
+	//	}
 
-		m_aiLastFiltedFrame = m_aiTrueData;
+	//	m_aiLastFiltedFrame = m_aiTrueData;
 
-		printf("%i \n", m_largestTick);
-		m_aiPastEntitys = m_aiEntities;
-	}
-	else
-	{
-		m_largestTick++;
-		printf("WARNING: SKIPPED OLD DATA %i \n", m_largestTick);
-	}
+	//	printf("%i \n", m_largestTick);
+	//	m_aiPastEntitys = m_aiEntities;
+	//}
+	//else
+	//{
+	//	m_largestTick++;
+	//	for (size_t i = 0; i < m_aiLastFiltedFrame.size(); i++)
+	//	{
+	//		AIEntity ai = m_aiLastFiltedFrame[i];
+	//		ai.position.x += ai.velocity.x * deltaTime;
+	//		ai.position.y += ai.velocity.y * deltaTime;
+	//		//m_aiLastFiltedFrame[i] = ai;
+	//		m_aiTrueData[i] = ai;
+	//	}
+
+	//	printf("WARNING: SKIPPED OLD DATA %i \n", m_aiEntities[0].ticks);
+	//}
 	//-------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------
 
+	//Broken
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
 	//if (m_aiEntities[0].ticks >= m_largestTick)
 	//{
 	//	m_largestTick = m_aiEntities[0].ticks;
@@ -224,9 +237,21 @@ void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 	//	}
 	//	m_aiTrueData = m_aiLastFiltedFrame;
 	//}
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
 
-
-
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
+	if (m_aiEntities[0].ticks >= m_largestTick)
+	{
+		m_largestTick = m_aiEntities[0].ticks;
+	}
+	else
+	{
+		m_largestTick++;
+	}
+	//-------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
 
 }
 
