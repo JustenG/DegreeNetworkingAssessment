@@ -32,6 +32,7 @@ bool AssessmentNetworkingApplication::startup()
 {
 	m_packetTime = 0;
 	m_largestTick = 0;
+	m_skippedFrames = 0;
 
 	// setup the basic window
 	createWindow("Client Application", 1280, 720);
@@ -85,6 +86,8 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 	// handle network messages
 	RakNet::Packet* packet;
 
+	Gizmos::clear();
+
 	for (packet = m_peerInterface->Receive(); packet; m_peerInterface->DeallocatePacket(packet), packet = m_peerInterface->Receive()) 
 	{
 		switch (packet->data[0]) 
@@ -137,122 +140,81 @@ bool AssessmentNetworkingApplication::update(float deltaTime)
 			std::cout << "Received unhandled message." << std::endl;
 			break;
 		}
+
+		return true;
+
 	}
 
-	Gizmos::clear();
-
-	// add a grid
-	for (int i = 0; i < 21; ++i) {
-		Gizmos::addLine(vec3(-10 + i, 0, 10), vec3(-10 + i, 0, -10),
-						i == 10 ? vec4(1, 1, 1, 1) : vec4(0, 0, 0, 1));
-
-		Gizmos::addLine(vec3(10, 0, -10 + i), vec3(-10, 0, -10 + i),
-						i == 10 ? vec4(1, 1, 1, 1) : vec4(0, 0, 0, 1));
+	for (int i = 0; i < m_aiEntities.size(); ++i)
+	{
+		AIEntity ai = m_aiTrueData[i];
+		ai.position.x += ai.velocity.x * 0.016666667f;
+		ai.position.y += ai.velocity.y * 0.016666667f;
+		m_aiTrueData[i] = ai;
 	}
+
+
+
+	//// add a grid
+	//for (int i = 0; i < 21; ++i) {
+	//	Gizmos::addLine(vec3(-10 + i, 0, 10), vec3(-10 + i, 0, -10),
+	//					i == 10 ? vec4(1, 1, 1, 1) : vec4(0, 0, 0, 1));
+
+	//	Gizmos::addLine(vec3(10, 0, -10 + i), vec3(-10, 0, -10 + i),
+	//					i == 10 ? vec4(1, 1, 1, 1) : vec4(0, 0, 0, 1));
+	//}
 
 	return true;
 }
 
 void AssessmentNetworkingApplication::EntitySanityCheck(float deltaTime)
 {
-	//WORKS - JUST SLOW
-	//-------------------------------------------------------------------------------
-	//-------------------------------------------------------------------------------
-	//if (m_aiEntities[0].ticks >= m_largestTick)
-	//{
-
-	//	m_largestTick = m_aiEntities[0].ticks;
-
-
-	//	for (size_t i = 0; i < m_aiEntities.size(); i++)
-	//	{
-	//		AIEntity ai;
-	//		ai = m_aiEntities[i];
-
-	//		if (ai.teleported)
-	//		{
-	//			ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
-	//			ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
-	//		}
-	//		else
-	//		{
-	//			AIVector differance;
-	//			differance.x = ai.position.x - m_aiPastEntitys[i].position.x;
-	//			differance.y = ai.position.y - m_aiPastEntitys[i].position.y;
-
-	//			if (glm::abs(differance.x) > 40 || glm::abs(differance.y) > 40)
-	//			{
-	//				ai.position.x = ai.position.x + ai.velocity.x * deltaTime;
-	//				ai.position.y = ai.position.y + ai.velocity.y * deltaTime;
-	//			}
-	//			else
-	//			{
-	//				ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, deltaTime);
-	//				ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, deltaTime);
-	//			}
-	//		}
-
-	//		m_aiTrueData[i] = ai;
-	//	}
-
-	//	m_aiLastFiltedFrame = m_aiTrueData;
-
-	//	printf("%i \n", m_largestTick);
-	//	m_aiPastEntitys = m_aiEntities;
-	//}
-	//else
-	//{
-	//	m_largestTick++;
-	//	for (size_t i = 0; i < m_aiLastFiltedFrame.size(); i++)
-	//	{
-	//		AIEntity ai = m_aiLastFiltedFrame[i];
-	//		ai.position.x += ai.velocity.x * deltaTime;
-	//		ai.position.y += ai.velocity.y * deltaTime;
-	//		//m_aiLastFiltedFrame[i] = ai;
-	//		m_aiTrueData[i] = ai;
-	//	}
-
-	//	printf("WARNING: SKIPPED OLD DATA %i \n", m_aiEntities[0].ticks);
-	//}
-	//-------------------------------------------------------------------------------
-	//-------------------------------------------------------------------------------
-
 	//Broken
 	//-------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------
-	//if (m_aiEntities[0].ticks >= m_largestTick)
-	//{
-	//	m_largestTick = m_aiEntities[0].ticks;
-	//	m_aiTrueData = m_aiEntities;
-	//	m_aiLastFiltedFrame = m_aiEntities;
-	//}
-	//else
-	//{
-	//	for (size_t i = 0; i < m_aiLastFiltedFrame.size(); i++)
-	//	{
-	//		AIEntity ai = m_aiLastFiltedFrame[i];
-	//		ai.position.x += ai.velocity.x * 0.016666667f;
-	//		ai.position.y += ai.velocity.y * 0.016666667f;
-	//		m_aiLastFiltedFrame[i] = ai;
-	//	}
-	//	m_aiTrueData = m_aiLastFiltedFrame;
-	//}
-	//-------------------------------------------------------------------------------
-	//-------------------------------------------------------------------------------
 
-	//-------------------------------------------------------------------------------
-	//-------------------------------------------------------------------------------
+	float Smoothness = 0.2f;
+
+	printf("%i \n", m_aiEntities[0].ticks);
+
 	if (m_aiEntities[0].ticks >= m_largestTick)
 	{
 		m_largestTick = m_aiEntities[0].ticks;
+
+		for (int i = 0; i < m_aiEntities.size(); ++i)
+		{
+			AIEntity ai;
+			ai = m_aiEntities[i];
+
+			if (std::abs(m_aiEntities[i].position.x - m_aiLastFiltedFrame[i].position.x) < 45 &&
+				std::abs(m_aiEntities[i].position.y - m_aiLastFiltedFrame[i].position.y) < 45)
+			{
+				ai.position = LowPass(m_aiLastFiltedFrame[i].position, m_aiEntities[i].position, Smoothness);
+				ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, m_aiEntities[i].velocity, Smoothness);
+			}
+
+			m_aiTrueData[i] = ai;;
+		}
+
+		m_aiLastFiltedFrame = m_aiTrueData;
 	}
 	else
 	{
-		m_largestTick++;
+		for (size_t i = 0; i < m_aiLastFiltedFrame.size(); i++)
+		{
+			AIEntity ai = m_aiLastFiltedFrame[i];
+			ai.position.x += ai.velocity.x * 0.016666667f;
+			ai.position.y += ai.velocity.y * 0.016666667f;
+
+			ai.position = LowPass(m_aiLastFiltedFrame[i].position, ai.position, Smoothness);
+			ai.velocity = LowPass(m_aiLastFiltedFrame[i].velocity, ai.velocity, Smoothness);
+
+			m_aiLastFiltedFrame[i] = ai;
+		}
+		m_aiTrueData = m_aiLastFiltedFrame;
 	}
 	//-------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------
-
 }
 
 AIVector AssessmentNetworkingApplication::LowPass(AIVector prevFiltered, AIVector currRaw, float smoothingFactor)
@@ -268,6 +230,15 @@ float AssessmentNetworkingApplication::LowPass(float prevFiltered, float currRaw
 {
 	float resultingEntity;
 	resultingEntity = prevFiltered + smoothingFactor * (currRaw - prevFiltered);
+
+	return resultingEntity;
+}
+
+AIVector lerp(AIVector prevFiltered, AIVector currRaw, float smoothingFactor)
+{
+	AIVector resultingEntity;
+	resultingEntity.x = (currRaw.x - prevFiltered.x);
+	resultingEntity.y = (currRaw.y - prevFiltered.y);
 
 	return resultingEntity;
 }

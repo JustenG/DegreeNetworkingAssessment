@@ -45,6 +45,7 @@ private:
 
 	int m_largestTick;
 	float m_packetTime;
+	int m_skippedFrames;
 
 	float prevTime;
 	float deltaTime;
