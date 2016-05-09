@@ -24,9 +24,8 @@ public:
 
 	virtual void draw();
 
-	void EntitySanityCheck(float deltaTime);
+	void EntitySanityCheck();
 	AIVector LowPass(AIVector prevFiltered, AIVector currRaw, float smoothingFactor);
-	float LowPass(float prevFiltered, float currRaw, float smoothingFactor);
 
 private:
 
@@ -38,8 +37,10 @@ private:
 
 	std::vector<AIEntity>		m_aiLastFiltedFrame;
 	std::vector<AIEntity>		m_aiTrueData;
-	std::vector<AIEntity>		m_aiPastEntitys;
 	std::vector<AIEntity>		m_aiSkippedEntitys;
+
+	//The larger the smoothness the more data is taken from the delta of the new and old data
+	static const float smoothness;
 
 	bool m_lastFrameSkipped;
 

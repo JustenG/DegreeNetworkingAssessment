@@ -162,6 +162,7 @@ void Server::setupAIEntities(unsigned int count) {
 
 void Server::updateAIEntities(float deltaTime) {
 
+	//Update message index count
 	m_numMessagesSent++;
 
 	for (auto& ai : m_aiServerEntities) {
@@ -198,6 +199,7 @@ void Server::updateAIEntities(float deltaTime) {
 			ai.data->position.y -= offset.y * m_arenaRadius * 2;
 		}
 		
+		//Add message number index to entity for sanity check clinet side
 		ai.data->ticks = m_numMessagesSent;
 	}
 
